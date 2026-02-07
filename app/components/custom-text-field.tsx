@@ -1,11 +1,15 @@
 import React from "react";
 import { TextField } from "@mui/material";
-import { Controller, useFormContext } from "react-hook-form";
+import {
+  Controller,
+  useFormContext,
+  type ControllerRenderProps,
+} from "react-hook-form";
 
 /** カスタム TextField のプロパティ */
 type CustomTextFieldProps = {
   className?: string;
-  field?: any[];
+  field?: ControllerRenderProps[];
   label: string;
   name: string;
   required?: boolean;
@@ -24,6 +28,7 @@ export const CustomTextField = ({
     <Controller
       control={control}
       name={name}
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       render={({ field, formState: { errors, isValid } }) => (
         <TextField
           className={className}

@@ -72,7 +72,7 @@ export default function FormSample() {
     resolver: zodResolver(formSchema),
   });
 
-  const onSubmit = async (data: FormValues) => {};
+  const onSubmit = async (_data: FormValues) => {};
 
   return (
     <Container>

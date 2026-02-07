@@ -1,20 +1,16 @@
-import React from "react";
+import React, { type ReactNode } from "react";
+import { FormControl, FormHelperText, InputLabel, Select } from "@mui/material";
 import {
-  Box,
-  Container,
-  FormControl,
-  FormHelperText,
-  InputLabel,
-  MenuItem,
-  Select,
-} from "@mui/material";
-import { Controller, useFormContext } from "react-hook-form";
+  Controller,
+  useFormContext,
+  type ControllerRenderProps,
+} from "react-hook-form";
 
 /** カスタム Select のプロパティ */
 type CustomSelectProps = {
-  children: any;
+  children: ReactNode;
   className?: string;
-  field?: any[];
+  field?: ControllerRenderProps[];
   helperText?: string;
   label: string;
   name: string;
@@ -36,6 +32,7 @@ export const CustomSelect = ({
     <Controller
       control={control}
       name={name}
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       render={({ field, formState: { errors, isValid } }) => (
         <FormControl error={!!errors[name]} fullWidth sx={{ mt: 1 }}>
           <InputLabel id="custom-select">{label}</InputLabel>

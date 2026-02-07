@@ -18,6 +18,15 @@ export default defineConfig([
   {
     rules: {
       "@typescript-eslint/no-explicit-any": "warn",
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
       "import/order": [
         "error",
         {
@@ -44,6 +53,11 @@ export default defineConfig([
           ],
         },
       ],
+    },
+    settings: {
+      react: {
+        version: "detect",
+      },
     },
   },
   eslintConfigPrettier,

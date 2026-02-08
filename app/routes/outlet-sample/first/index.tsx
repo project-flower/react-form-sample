@@ -1,31 +1,34 @@
-import React from "react";
+import React, { useEffect, type FormEvent } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Box, Button, Container, Typography } from "@mui/material";
 import { FormProvider, useForm } from "react-hook-form";
 import {
   redirect,
   useLoaderData,
-  type ClientLoaderFunctionArgs,
+  type ActionFunctionArgs,
   type LoaderFunctionArgs,
 } from "react-router";
 import z from "zod";
 import { decryptSavedInformation } from "../decrypt.server";
-import type { Route } from "../../+types/home";
 import { encrypt } from "~/.server/crypto";
 import { commonSchema } from "~/common/schemas";
 import { CustomTextField } from "~/components/custom-text-field";
-import { KEY_OUTLET_SAMPLE } from "~/constants";
+import {
+  loadFromLocalStorage,
+  saveToLocalStorage,
+} from "~/routes/local-storage.client";
 
 /** フォーム スキーマ */
 const formSchema = z.object({
   name: commonSchema.required(),
   telephone: commonSchema.required(),
   address: commonSchema.required(),
+  additional: z.string(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-export async function action({ request }: Route.ActionArgs) {
+export async function action({ request }: ActionFunctionArgs) {
   const formData = await request.formData();
 
   const encrypted = encrypt(
@@ -36,17 +39,8 @@ export async function action({ request }: Route.ActionArgs) {
     }),
   );
 
+  // Form から取得した情報を暗号化し、次のページのクエリパラメータに渡す。
   return redirect(`/outlet-sample/second?v=${encrypted}`);
-}
-
-export async function clientLoader({ request }: ClientLoaderFunctionArgs) {
-  const value = localStorage.getItem(KEY_OUTLET_SAMPLE);
-
-  if (value) {
-    window.location.replace(
-      `${request.headers.get("origin")}/outlet-sample/first/?v=${value}`,
-    );
-  }
 }
 
 export async function loader({ request }: LoaderFunctionArgs) {
@@ -75,10 +69,36 @@ export default function First() {
       name: loaderData?.name || "",
       telephone: loaderData?.telephone || "",
       address: loaderData?.address || "",
+      // additional: localStorageValue?.additional,
+      additional: "",
     },
     mode: "onBlur",
     resolver: zodResolver(formSchema),
   });
+
+  useEffect(() => {
+    // ローカル ストレージの内容は、クライアントサイドで読み込む。
+    const localStorageValue = loadFromLocalStorage();
+    const additional = localStorageValue?.additional;
+
+    if (additional) {
+      form.setValue("additional", additional);
+    }
+  });
+
+  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
+    const target = event.target as typeof event.target & {
+      additional: { value?: string };
+    };
+
+    const saved = loadFromLocalStorage();
+
+    // ローカルストレージに暗号化しない情報を保存する。
+    saveToLocalStorage({
+      encrypted: saved?.encrypted,
+      additional: target.additional.value,
+    });
+  };
 
   return (
     <Container>
@@ -91,6 +111,8 @@ export default function First() {
           justifyContent="center"
           margin="5em"
           method="POST"
+          // React Router の action を呼び出すので form.handleSubmit は利用しない
+          onSubmit={onSubmit}
         >
           <Typography className="m-1" variant={"h5"}>
             First
@@ -98,6 +120,7 @@ export default function First() {
           <CustomTextField label="名前" name="name" required />
           <CustomTextField label="電話番号" name="telephone" required />
           <CustomTextField label="住所" name="address" required />
+          <CustomTextField label="任意情報" name="additional" />
           <Button
             color="primary"
             className=""

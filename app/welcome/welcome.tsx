@@ -43,7 +43,7 @@ export function Welcome() {
             </ul>
             <Stack spacing={2}>
               <Link href="./form-sample">Form Sample</Link>
-              <Link href="./outlet-sample/first">Outlet Sample</Link>
+              <Link href="./outlet-sample">Outlet Sample</Link>
             </Stack>
           </nav>
         </div>

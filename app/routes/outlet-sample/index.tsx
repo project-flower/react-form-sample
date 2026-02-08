@@ -1,17 +1,20 @@
 import React from "react";
-import { Typography } from "@mui/material";
-import { Outlet, useLoaderData } from "react-router";
+import { Link } from "@mui/material";
+import { loadFromLocalStorage } from "../local-storage.client";
 
-export function loader() {
-  return { result: "outlet-sample/" };
+export function clientLoader() {
+  const encrypted = loadFromLocalStorage()?.encrypted;
+  let params = "";
+
+  if (encrypted) {
+    // ローカルストレージに保存値があれば、バックエンドで復号させるため
+    // クエリパラメータに値を渡す。
+    params = `/?v=${encrypted}`;
+  }
+
+  location.replace(`${location.origin}/outlet-sample/first${params}`);
 }
 
-export default function OutletSample() {
-  const loaderData = useLoaderData<typeof loader>();
-  return (
-    <>
-      <Typography>{loaderData.result}</Typography>
-      <Outlet />
-    </>
-  );
+export default function Index() {
+  return <Link href="./first">入力へ</Link>;
 }

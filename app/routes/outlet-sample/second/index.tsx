@@ -1,28 +1,19 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   Box,
+  Link,
   Table,
   TableBody,
   TableCell,
   TableRow,
   Typography,
 } from "@mui/material";
-import {
-  useLoaderData,
-  type ClientLoaderFunctionArgs,
-  type LoaderFunctionArgs,
-} from "react-router";
+import { useLoaderData, type LoaderFunctionArgs } from "react-router";
 import { decryptSavedInformation } from "../decrypt.server";
-import { KEY_OUTLET_SAMPLE } from "~/constants";
-
-export async function clientLoader({ params }: ClientLoaderFunctionArgs) {
-  const arg = params.v;
-
-  if (arg) {
-    // クエリパラメータ v があれば、ローカル ストレージに保存する。
-    localStorage.setItem(KEY_OUTLET_SAMPLE, arg);
-  }
-}
+import {
+  loadFromLocalStorage,
+  saveToLocalStorage,
+} from "~/routes/local-storage.client";
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const searchParams = new URL(request.url).searchParams;
@@ -63,7 +54,20 @@ const CustomTableRow = (props: { name: string; value?: string }) => {
 
 /** 2 つ目のページ */
 export default function Second() {
-  const { name, telephone, address } = useLoaderData();
+  const inClient = typeof window !== "undefined";
+  const loaderData = useLoaderData<typeof loader>();
+  const localStorageValue = inClient ? loadFromLocalStorage() : undefined;
+
+  useEffect(() => {
+    const encrypted = new URL(location.href).searchParams.get("v");
+
+    if (encrypted) {
+      // クエリパラメータ v があれば、ローカル ストレージに保存する。
+      // additional はクエリパラメータにはないので、既存の値を読み込む。
+      const saved = loadFromLocalStorage();
+      saveToLocalStorage({ encrypted, additional: saved?.additional });
+    }
+  });
 
   return (
     <Box
@@ -79,11 +83,18 @@ export default function Second() {
       </Typography>
       <Table sx={{ width: "auto" }}>
         <TableBody>
-          <CustomTableRow name="名前" value={name} />
-          <CustomTableRow name="電話番号" value={telephone} />
-          <CustomTableRow name="住所" value={address} />
+          <CustomTableRow name="名前" value={loaderData?.name} />
+          <CustomTableRow name="電話番号" value={loaderData?.telephone} />
+          <CustomTableRow name="住所" value={loaderData?.address} />
+          <CustomTableRow
+            name="任意情報"
+            value={localStorageValue?.additional}
+          />
         </TableBody>
       </Table>
+      <Link href="." marginTop={2}>
+        戻る
+      </Link>
     </Box>
   );
 }

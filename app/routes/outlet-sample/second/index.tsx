@@ -8,7 +8,7 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { useLoaderData, type LoaderFunctionArgs } from "react-router";
+import { data, useLoaderData, type LoaderFunctionArgs } from "react-router";
 import { decryptSavedInformation } from "../decrypt.server";
 import {
   loadFromLocalStorage,
@@ -31,7 +31,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   }
 
   // クエリパラメータ v がないか、復号に失敗した場合はエラー
-  throw new Error("不正なアクセスです。");
+  throw data("不正なアクセスです。", { status: 500 });
 }
 
 /** このページのテーブルに表示する行 */
